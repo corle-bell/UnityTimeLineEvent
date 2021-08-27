@@ -45,6 +45,7 @@ namespace Bm
             if(_a!=time)
             {
                 node.progress = time / duration;
+                EditorUtility.SetDirty(target);
             }
             if (GUILayout.Button("保存"))
             {
