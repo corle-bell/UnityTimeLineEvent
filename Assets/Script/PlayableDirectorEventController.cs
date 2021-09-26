@@ -34,18 +34,7 @@ namespace Bm
 
         private void OnEnable()
         {
-			if (!director.playOnAwake)
-			{
-				director.played += OnPlay;
-				director.paused += OnPause;
-				director.stopped += OnEnd;
-			}
-			else
-            {
-				Clear();
-				status = 1;
-				director.stopped += OnEnd;
-			}
+			FixEnable();
 		}
 
         private void OnDisable()
@@ -63,6 +52,7 @@ namespace Bm
 			}
 		}
 
+
         void OnPlay(PlayableDirector director)
         {
 			status = 1;
@@ -77,7 +67,7 @@ namespace Bm
 		void OnEnd(PlayableDirector director)
 		{
 			status = 0;
-			if (Application.isPlaying) ExecEvent(1);
+			ExecEvent(1);
 		}
 
 		private void Update()
@@ -99,11 +89,13 @@ namespace Bm
 				percent = 1;
 				status = 0;
 			}
-			if(Application.isPlaying)ExecEvent(percent);
+			ExecEvent(percent);
 		}
 
 		protected void ExecEvent(float _percent)
 		{
+			if (!Application.isPlaying) return;
+
 			for (int i = 0; i < events.Count; i++)
 			{
 				if (_percent >= events[i].progress && !events[i].isDo)
@@ -119,6 +111,23 @@ namespace Bm
 			for (int i = 0; i < events.Count; i++)
 			{
 				events[i].isDo = false;
+			}
+		}
+
+		private void FixEnable()
+        {
+			if (director == null) return;
+			if (!director.playOnAwake)
+			{
+				director.played += OnPlay;
+				director.paused += OnPause;
+				director.stopped += OnEnd;
+			}
+			else
+			{
+				Clear();
+				status = 1;
+				director.stopped += OnEnd;
 			}
 		}
 
@@ -144,6 +153,20 @@ namespace Bm
 				t.mEvent.AddListener(_event);
 			}
 			events.Add(t);
+		}
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="_director"></param>
+		/// <param name="fixEnable"></param>
+		public void SetDirector(PlayableDirector _director, bool fixEnable=true)
+        {
+			director = _director;
+			if(fixEnable)
+            {
+				FixEnable();
+			}
 		}
 	}
 }
